@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ScanActivity">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/orange"
+        app:title="选择蓝牙设备"
+        app:titleTextColor="@color/white">
+
+        <TextView
+            android:id="@+id/tv_scan_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginEnd="6dp"
+            android:padding="10dp"
+            android:text="搜索"
+            android:textColor="@color/white"
+            android:textSize="14sp"
+            android:visibility="gone" />
+
+    </com.google.android.material.appbar.MaterialToolbar>
+
+    <ProgressBar
+        android:id="@+id/pb_scan_loading"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/toolbar"
+        android:layout_marginBottom="-10dp"
+        android:indeterminate="true"
+        android:indeterminateTint="@color/orange"
+        android:visibility="invisible" />
+
+    <!--设备列表-->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_device"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/toolbar"
+        android:layout_marginTop="4dp"
+        android:overScrollMode="never" />
+
+    <!--未扫描到设备时显示-->
+    <include
+        android:id="@+id/empty_lay"
+        layout="@layout/lay_empty"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/toolbar" />
+
+    <!-- Android 12蓝牙扫描权限为许可时显示 Shell_Unresponsive-->
+    <include
+        android:id="@+id/request_bluetooth_scan_lay"
+        layout="@layout/lay_android12_should_scan"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/toolbar" />
+
+    <!--Android 6 至 11 没有打开位置开关 无法扫描蓝牙-->
+    <include
+        android:id="@+id/enable_location_lay"
+        layout="@layout/lay_should_enable_location"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/toolbar" />
+
+    <!-- 位置权限未许可时显示 -->
+    <include
+        android:id="@+id/request_location_lay"
+        layout="@layout/lay_should_location_lay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/toolbar" />
+
+    <!-- 手机蓝牙未开启时显示 -->
+    <include
+        android:id="@+id/enable_bluetooth_lay"
+        layout="@layout/lay_should_enable_bluetooth"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/toolbar" />
+
+    <!-- Android12 开启蓝牙需要先请求蓝牙连接权限 -->
+    <include
+        android:id="@+id/request_bluetooth_connect_lay"
+        layout="@layout/lay_android12_should_connect"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/toolbar" />
+
+</RelativeLayout>
