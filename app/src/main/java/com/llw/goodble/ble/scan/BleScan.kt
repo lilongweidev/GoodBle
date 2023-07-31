@@ -9,6 +9,9 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 
+/**
+ * 低功耗扫描类
+ */
 @SuppressLint("MissingPermission", "InlinedApi")
 class BleScan private constructor(private val context: Context) {
 
@@ -35,8 +38,7 @@ class BleScan private constructor(private val context: Context) {
         fun getInstance(context: Context) = instance ?: synchronized(this) {
             instance ?: BleScan(context).also {
                 instance = it
-                val manager =
-                    context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+                val manager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
                 mBluetoothAdapter = manager.adapter
                 if (mBluetoothAdapter != null) {
                     mScanner = mBluetoothAdapter?.bluetoothLeScanner
@@ -122,10 +124,7 @@ class BleScan private constructor(private val context: Context) {
             localScanFailed("Currently scanning, please close the current scan and scan again.")
             return
         }
-        if (mScanner == null) {
-            localScanFailed("BluetoothLeScanner is Null.")
-            return
-        }
+        if (mScanner == null) mScanner = mBluetoothAdapter?.bluetoothLeScanner
         if (!mBluetoothAdapter!!.isEnabled) {
             localScanFailed("Bluetooth not turned on.")
             return

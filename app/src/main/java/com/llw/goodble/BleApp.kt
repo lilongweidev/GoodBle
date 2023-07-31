@@ -8,10 +8,10 @@ import com.llw.goodble.ble.BleCore
 class BleApp : Application() {
 
     @SuppressLint("StaticFieldLeak")
-    var context: Context? = null
+    private lateinit var context: Context
 
     @SuppressLint("StaticFieldLeak")
-    private var bleCore: BleCore? = null
+    private lateinit var bleCore: BleCore
 
     override fun onCreate() {
         super.onCreate()

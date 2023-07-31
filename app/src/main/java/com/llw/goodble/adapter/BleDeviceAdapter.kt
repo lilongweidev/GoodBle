@@ -1,6 +1,5 @@
 package com.llw.goodble.adapter
 
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -11,8 +10,7 @@ import java.util.*
 /**
  * Ble蓝牙适配器
  */
-class BleDeviceAdapter private constructor(
-    private val mContext: Context,
+class BleDeviceAdapter(
     private val mDevices: List<BleDevice>
 ) : RecyclerView.Adapter<BleDeviceAdapter.ViewHolder>() {
 
@@ -23,12 +21,9 @@ class BleDeviceAdapter private constructor(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val viewHolder = ViewHolder(ItemDeviceRvBinding.inflate(LayoutInflater.from(mContext), parent, false))
+        val viewHolder = ViewHolder(ItemDeviceRvBinding.inflate(LayoutInflater.from(parent.context), parent, false))
         viewHolder.binding.itemDevice.setOnClickListener { v ->
-            if (mOnItemClickListener != null) {
-                val position: Int = viewHolder.adapterPosition
-                mOnItemClickListener!!.onItemClick(v, position)
-            }
+            if (mOnItemClickListener != null) mOnItemClickListener!!.onItemClick(v, viewHolder.adapterPosition)
         }
         return viewHolder
     }

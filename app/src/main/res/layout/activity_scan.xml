@@ -62,7 +62,8 @@
         layout="@layout/lay_android12_should_scan"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/toolbar" />
+        android:layout_below="@id/toolbar"
+        android:visibility="gone" />
 
     <!--Android 6 至 11 没有打开位置开关 无法扫描蓝牙-->
     <include
@@ -70,7 +71,8 @@
         layout="@layout/lay_should_enable_location"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/toolbar" />
+        android:layout_below="@id/toolbar"
+        android:visibility="gone" />
 
     <!-- 位置权限未许可时显示 -->
     <include
@@ -78,7 +80,8 @@
         layout="@layout/lay_should_location_lay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/toolbar" />
+        android:layout_below="@id/toolbar"
+        android:visibility="gone" />
 
     <!-- 手机蓝牙未开启时显示 -->
     <include
@@ -86,7 +89,8 @@
         layout="@layout/lay_should_enable_bluetooth"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/toolbar" />
+        android:layout_below="@id/toolbar"
+        android:visibility="gone" />
 
     <!-- Android12 开启蓝牙需要先请求蓝牙连接权限 -->
     <include
@@ -94,6 +98,7 @@
         layout="@layout/lay_android12_should_connect"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/toolbar" />
+        android:layout_below="@id/toolbar"
+        android:visibility="gone" />
 
 </RelativeLayout>
