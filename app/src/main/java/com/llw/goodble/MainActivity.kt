@@ -3,20 +3,35 @@ package com.llw.goodble
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothGattService
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.SimpleItemAnimator
+import com.llw.goodble.adapter.BleDeviceAdapter
+import com.llw.goodble.adapter.OnItemClickListener
+import com.llw.goodble.adapter.ServiceAdapter
 import com.llw.goodble.base.BaseActivity
 import com.llw.goodble.base.viewBinding
+import com.llw.goodble.ble.BleCallback
+import com.llw.goodble.ble.BleCore
 import com.llw.goodble.databinding.ActivityMainBinding
 
 /**
  * 主页面
  */
-class MainActivity : BaseActivity() {
+class MainActivity : BaseActivity(), BleCallback, OnItemClickListener {
 
     private val binding by viewBinding(ActivityMainBinding::inflate)
+
+    private lateinit var bleCore: BleCore
+
+    private var mServiceAdapter: ServiceAdapter? = null
+
+    private val mServiceList: MutableList<BluetoothGattService> = mutableListOf()
 
     @SuppressLint("MissingPermission")
     private val scanIntent =
@@ -29,7 +44,8 @@ class MainActivity : BaseActivity() {
                 } else {
                     result.data!!.getParcelableExtra("device") as BluetoothDevice?
                 }
-                showMsg("${device?.name} , ${device?.address}")
+                //连接设备
+                if (device != null) bleCore.connect(device)
             }
         }
 
@@ -37,6 +53,48 @@ class MainActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        bleCore = (application as BleApp).getBleCore()
+        bleCore.setBleCallback(this@MainActivity)
+        //进入扫描页面
         binding.toolbar.setNavigationOnClickListener { scanIntent.launch(Intent(this,ScanActivity::class.java)) }
+        //断开连接
+        binding.tvDisconnect.setOnClickListener {
+            binding.tvDisconnect.visibility = View.GONE
+            bleCore.disconnect()
+        }
+    }
+
+    override fun deviceInfo(info: String) {
+        runOnUiThread {
+            binding.tvDeviceInfo.text = info
+        }
+    }
+
+    override fun onConnectionStateChange(state: Boolean) {
+        runOnUiThread {
+            if (state) binding.tvDisconnect.visibility = View.VISIBLE
+        }
+    }
+
+    override fun onServicesDiscovered(services: List<BluetoothGattService>) {
+        runOnUiThread {
+            mServiceList.clear()
+            mServiceList.addAll(services)
+            mServiceAdapter ?: run {
+                mServiceAdapter = ServiceAdapter(mServiceList)
+                binding.rvService.apply {
+                    (itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
+                    layoutManager = LinearLayoutManager(this@MainActivity)
+                    adapter = mServiceAdapter
+                }
+                mServiceAdapter!!.setOnItemClickListener(this@MainActivity)
+                mServiceAdapter
+            }
+            mServiceAdapter!!.notifyDataSetChanged()
+        }
+    }
+
+    override fun onItemClick(view: View?, position: Int) {
+        showMsg(mServiceList[position].uuid.toString())
     }
 }
