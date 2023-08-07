@@ -190,6 +190,7 @@ class ScanActivity : BaseActivity(), View.OnClickListener, BleScanCallback, Rece
         bleCore.startScan()
         binding.tvScanStatus.text = "停止"
         binding.pbScanLoading.visibility = View.VISIBLE
+        binding.emptyLay.root.visibility = View.VISIBLE
     }
 
     private fun stopScan() {

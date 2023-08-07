@@ -3,16 +3,18 @@ package com.llw.goodble
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattService
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.SimpleItemAnimator
-import com.llw.goodble.adapter.BleDeviceAdapter
 import com.llw.goodble.adapter.OnItemClickListener
+import com.llw.goodble.adapter.OperateCallback
 import com.llw.goodble.adapter.ServiceAdapter
 import com.llw.goodble.base.BaseActivity
 import com.llw.goodble.base.viewBinding
@@ -20,10 +22,11 @@ import com.llw.goodble.ble.BleCallback
 import com.llw.goodble.ble.BleCore
 import com.llw.goodble.databinding.ActivityMainBinding
 
+
 /**
  * 主页面
  */
-class MainActivity : BaseActivity(), BleCallback, OnItemClickListener {
+class MainActivity : BaseActivity(), BleCallback, OperateCallback {
 
     private val binding by viewBinding(ActivityMainBinding::inflate)
 
@@ -81,20 +84,24 @@ class MainActivity : BaseActivity(), BleCallback, OnItemClickListener {
             mServiceList.clear()
             mServiceList.addAll(services)
             mServiceAdapter ?: run {
-                mServiceAdapter = ServiceAdapter(mServiceList)
+                mServiceAdapter = ServiceAdapter(mServiceList, this@MainActivity)
                 binding.rvService.apply {
                     (itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
                     layoutManager = LinearLayoutManager(this@MainActivity)
                     adapter = mServiceAdapter
+                    //增加分隔线
+                    addItemDecoration(DividerItemDecoration(this@MainActivity, DividerItemDecoration.VERTICAL))
                 }
-                mServiceAdapter!!.setOnItemClickListener(this@MainActivity)
                 mServiceAdapter
             }
             mServiceAdapter!!.notifyDataSetChanged()
         }
     }
 
-    override fun onItemClick(view: View?, position: Int) {
-        showMsg(mServiceList[position].uuid.toString())
+    /**
+     * 属性操作
+     */
+    override fun onPropertyOperate(characteristic: BluetoothGattCharacteristic, operateName: String) {
+        showMsg(operateName)
     }
 }

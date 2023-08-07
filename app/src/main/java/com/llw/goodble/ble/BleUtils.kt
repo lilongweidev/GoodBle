@@ -71,7 +71,7 @@ object BleUtils {
             "0x184D" -> "Microphone Control service"
             "0x184E" -> "Audio Stream Control service"
             "0x184F" -> "Broadcast Audio Scan service"
-            "0x1850" -> " Published Audio Capabilities service"
+            "0x1850" -> "Published Audio Capabilities service"
             "0x1851" -> "Basic Audio Announcement service"
             "0x1852" -> "Broadcast Audio Announcement service"
             "0x1853" -> "Common Audio service"
@@ -93,7 +93,7 @@ object BleUtils {
             "0x2A02" -> "Peripheral Privacy Flag"
             "0x2A03" -> "Reconnection Address"
             "0x2A04" -> "Peripheral Preferred Connection Parameters"
-            "0x2A05" -> " Service Changed"
+            "0x2A05" -> "Service Changed"
             "0x2A06" -> "Alert Level"
             "0x2A07" -> "Tx Power Level"
             "0x2A08" -> "Date Time"
@@ -540,6 +540,26 @@ object BleUtils {
             else -> "Unknown Characteristics"
         }
 
-    fun getServiceUUID(uuid: UUID) =
+    /**
+     * 获取属性
+     */
+    fun getProperties(property: Int): List<String> {
+        val properties: MutableList<String> = ArrayList()
+        for (i in 0..7) {
+            when (property and (1 shl i)) {
+                0x01 -> properties.add("Broadcast")
+                0x02 -> properties.add("Read")
+                0x04 -> properties.add("Write No Response")
+                0x08 -> properties.add("Write")
+                0x10 -> properties.add("Notify")
+                0x20 -> properties.add("Indicate")
+                0x40 -> properties.add("Authenticated Signed Writes")
+                0x80 -> properties.add("Extended Properties")
+            }
+        }
+        return properties
+    }
+
+    fun getShortUUID(uuid: UUID) =
         "0x${uuid.toString().substring(4, 8).uppercase(Locale.getDefault())}"
 }

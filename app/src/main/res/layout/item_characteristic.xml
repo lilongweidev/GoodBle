@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="1dp"
+    android:foreground="?attr/selectableItemBackground"
+    android:paddingStart="16dp">
+
+    <TextView
+        android:id="@+id/tv_character_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="特性"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tv_uuid_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="UUID："
+        app:layout_constraintStart_toStartOf="@+id/tv_character_name"
+        app:layout_constraintTop_toBottomOf="@+id/tv_character_name" />
+
+    <TextView
+        android:id="@+id/tv_character_uuid"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="UUID"
+        android:textColor="@color/black"
+        app:layout_constraintBottom_toBottomOf="@+id/tv_uuid_title"
+        app:layout_constraintStart_toEndOf="@+id/tv_uuid_title"
+        app:layout_constraintTop_toTopOf="@+id/tv_uuid_title" />
+
+    <TextView
+        android:id="@+id/tv_property_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="Properties："
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/tv_character_name"
+        app:layout_constraintTop_toBottomOf="@+id/tv_uuid_title" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_property"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="@+id/tv_property_title"
+        app:layout_constraintStart_toEndOf="@+id/tv_property_title"
+        app:layout_constraintTop_toTopOf="@+id/tv_property_title" />
+</androidx.constraintlayout.widget.ConstraintLayout>
