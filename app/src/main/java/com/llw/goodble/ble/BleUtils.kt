@@ -1,5 +1,14 @@
 package com.llw.goodble.ble
 
+import android.os.Build
+import com.llw.goodble.ble.BleConstant.AUTHENTICATED_SIGNED_WRITES
+import com.llw.goodble.ble.BleConstant.BROADCAST
+import com.llw.goodble.ble.BleConstant.EXTENDED_PROPERTIES
+import com.llw.goodble.ble.BleConstant.INDICATE
+import com.llw.goodble.ble.BleConstant.NOTIFY
+import com.llw.goodble.ble.BleConstant.READ
+import com.llw.goodble.ble.BleConstant.WRITE
+import com.llw.goodble.ble.BleConstant.WRITE_NO_RESPONSE
 import java.util.*
 
 object BleUtils {
@@ -79,7 +88,7 @@ object BleUtils {
             "0x1855" -> "Telephony and Media Audio service"
             "0x1856" -> "Public Broadcast Announcement service"
             "0x1857" -> "Electronic Shelf Label service"
-            else -> "Unknown Service"
+            else -> BleConstant.UNKNOWN_SERVICE
         }
 
     /**
@@ -537,7 +546,33 @@ object BleUtils {
             "0x2BFD" -> "ESL LED Information"
             "0x2BFE" -> "ESL Control Point"
             "0x2BFF" -> "UDI for Medical Devices"
-            else -> "Unknown Characteristics"
+            else -> BleConstant.UNKNOWN_CHARACTERISTICS
+        }
+
+    /**
+     * 获取描述名称
+     */
+    fun getDescriptorName(uuid: UUID) =
+        when ("0x${uuid.toString().substring(4, 8).uppercase(Locale.getDefault())}") {
+            "0x2900" -> "Characteristic Extended Properties"
+            "0x2901" -> "Characteristic User Description"
+            "0x2902" -> "Client Characteristic Configuration"
+            "0x2903" -> "Server Characteristic Configuration"
+            "0x2904" -> "Characteristic Presentation Format"
+            "0x2905" -> "Characteristic Aggregate Format"
+            "0x2906" -> "Valid Range"
+            "0x2907" -> "External Report Reference"
+            "0x2908" -> "Report Reference"
+            "0x2909" -> "Number of Digitals"
+            "0x290A" -> "Value Trigger Setting"
+            "0x290B" -> "Environmental Sensing Configuration"
+            "0x290C" -> "Environmental Sensing Measurement"
+            "0x290D" -> "Environmental Sensing Trigger Setting"
+            "0x290E" -> "Time Trigger Setting"
+            "0x290F" -> "Complete BR-EDR Transport Block Data"
+            "0x2910" -> "Observation Schedule"
+            "0x2911" -> "Valid Range and Accuracy"
+            else -> BleConstant.UNKNOWN_DESCRIPTOR
         }
 
     /**
@@ -547,14 +582,14 @@ object BleUtils {
         val properties: MutableList<String> = ArrayList()
         for (i in 0..7) {
             when (property and (1 shl i)) {
-                0x01 -> properties.add("Broadcast")
-                0x02 -> properties.add("Read")
-                0x04 -> properties.add("Write No Response")
-                0x08 -> properties.add("Write")
-                0x10 -> properties.add("Notify")
-                0x20 -> properties.add("Indicate")
-                0x40 -> properties.add("Authenticated Signed Writes")
-                0x80 -> properties.add("Extended Properties")
+                0x01 -> properties.add(BROADCAST)
+                0x02 -> properties.add(READ)
+                0x04 -> properties.add(WRITE_NO_RESPONSE)
+                0x08 -> properties.add(WRITE)
+                0x10 -> properties.add(NOTIFY)
+                0x20 -> properties.add(INDICATE)
+                0x40 -> properties.add(AUTHENTICATED_SIGNED_WRITES)
+                0x80 -> properties.add(EXTENDED_PROPERTIES)
             }
         }
         return properties
@@ -562,4 +597,44 @@ object BleUtils {
 
     fun getShortUUID(uuid: UUID) =
         "0x${uuid.toString().substring(4, 8).uppercase(Locale.getDefault())}"
+
+    /**
+     * byte[] to hex
+     * @param isAdd 是否添加 0x 头
+     */
+    fun bytesToHex(byteArray: ByteArray, isAdd: Boolean = false): String {
+        val hexChars = "0123456789ABCDEF"
+        val hexString = StringBuilder()
+        for (byte in byteArray) {
+            val value = byte.toInt() and 0xFF
+            val firstIndex = value shr 4 and 0x0F
+            val secondIndex = value and 0x0F
+            hexString.append(hexChars[firstIndex])
+            hexString.append(hexChars[secondIndex])
+        }
+        return (if (isAdd) "0x" else "" ) + hexString.toString()
+    }
+
+    /**
+     * hex to byte[]
+     */
+    fun hexToBytes(hexString: String): ByteArray {
+        val cleanHexString = hexString.replace("\\s".toRegex(), "")
+        val byteArray = ByteArray(cleanHexString.length / 2)
+        for (i in byteArray.indices) {
+            val index = i * 2
+            val byteString = cleanHexString.substring(index, index + 2)
+            val byteValue = byteString.toInt(16).toByte()
+            byteArray[i] = byteValue
+        }
+        return byteArray
+    }
+
+    /**
+     * 是否HEX格式数据
+     */
+    fun isHexFormat(str: String) = Regex("^([\\dA-Fa-f]{2})+$").matches(str)
+
+    fun isAndroid13() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+
 }

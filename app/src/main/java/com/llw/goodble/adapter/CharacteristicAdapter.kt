@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.llw.goodble.ble.BleConstant.UNKNOWN_CHARACTERISTICS
 import com.llw.goodble.ble.BleUtils
 import com.llw.goodble.databinding.ItemCharacteristicBinding
 
@@ -22,16 +23,27 @@ class CharacteristicAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.binding.tvCharacterName.text = BleUtils.getCharacteristicsName(characteristics[position].uuid)
-        holder.binding.tvCharacterUuid.text = BleUtils.getShortUUID(characteristics[position].uuid)
+        val characteristic = characteristics[position]
+        val characteristicName = BleUtils.getCharacteristicsName(characteristic.uuid)
+        holder.binding.tvCharacterName.text = characteristicName
+        holder.binding.tvCharacterUuid.text = if (characteristicName != UNKNOWN_CHARACTERISTICS) BleUtils.getShortUUID(characteristic.uuid) else characteristic.uuid.toString()
         //加载特性下的属性
         holder.binding.rvProperty.apply {
             layoutManager = LinearLayoutManager(context).apply { orientation = LinearLayoutManager.HORIZONTAL }
-            val properties: List<String> = BleUtils.getProperties(characteristics[position].properties)
+            val properties: List<String> = BleUtils.getProperties(characteristic.properties)
             adapter = PropertyAdapter(properties, object : OnItemClickListener {
                 //点击属性
-                override fun onItemClick(view: View?, position: Int) { callback.onPropertyOperate(characteristics[position], properties[position]) }
+                override fun onItemClick(view: View?, position: Int) { callback.onPropertyOperate(characteristic, properties[position]) }
             })
+        }
+        //加载特性下的描述
+        if (characteristic.descriptors.isEmpty()) {
+            holder.binding.layDescriptors.visibility = View.GONE
+            return
+        }
+        holder.binding.rvDescriptor.apply {
+            layoutManager = LinearLayoutManager(context)
+            adapter = DescriptorAdapter(characteristic.descriptors)
         }
     }
 

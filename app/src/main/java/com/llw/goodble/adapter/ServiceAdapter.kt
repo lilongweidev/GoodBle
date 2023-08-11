@@ -8,6 +8,7 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.llw.goodble.R
+import com.llw.goodble.ble.BleConstant.UNKNOWN_SERVICE
 import com.llw.goodble.ble.BleUtils
 import com.llw.goodble.databinding.ItemServiceBinding
 
@@ -34,8 +35,9 @@ class ServiceAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.binding.tvServiceName.text = BleUtils.getServiceName(services[position].uuid)
-        holder.binding.tvServiceUuid.text = BleUtils.getShortUUID(services[position].uuid)
+        val serviceName = BleUtils.getServiceName(services[position].uuid)
+        holder.binding.tvServiceName.text = serviceName
+        holder.binding.tvServiceUuid.text = if (serviceName != UNKNOWN_SERVICE) BleUtils.getShortUUID(services[position].uuid) else services[position].uuid.toString()
         //加载服务下的特性
         holder.binding.rvCharacteristics.apply {
             layoutManager = LinearLayoutManager(context)

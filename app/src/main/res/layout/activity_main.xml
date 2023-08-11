@@ -15,6 +15,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:navigationIcon="@drawable/ic_scan_ble"
+        app:subtitleCentered="true"
+        app:subtitleTextColor="@color/white"
         app:title="GoodBle"
         app:titleCentered="true"
         app:titleTextColor="@color/white">
@@ -36,9 +38,17 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:padding="16dp"
-        android:text="设备信息"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
+
+    <include
+        android:id="@+id/empty_ble_lay"
+        layout="@layout/lay_empty_ble"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_below="@id/toolbar"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolbar" />
 
     <androidx.recyclerview.widget.RecyclerView

@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="1dp"
     android:foreground="?attr/selectableItemBackground"
     android:paddingStart="16dp">
 
@@ -44,7 +43,6 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
         android:text="Properties："
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="@+id/tv_character_name"
         app:layout_constraintTop_toBottomOf="@+id/tv_uuid_title" />
 
@@ -55,4 +53,27 @@
         app:layout_constraintBottom_toBottomOf="@+id/tv_property_title"
         app:layout_constraintStart_toEndOf="@+id/tv_property_title"
         app:layout_constraintTop_toTopOf="@+id/tv_property_title" />
+
+    <LinearLayout
+        android:id="@+id/lay_descriptors"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_property_title"
+        tools:layout_editor_absoluteX="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Descriptors:"
+            android:textColor="@color/black"
+            android:textStyle="bold" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_descriptor"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
