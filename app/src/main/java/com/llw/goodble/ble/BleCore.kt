@@ -93,6 +93,7 @@ class BleCore private constructor(private val context: Context) {
      */
     fun connect(device: BluetoothDevice) {
         deviceInfo("连接中...")
+        if (mIsEnabled) mIsEnabled = false
         mGatt = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             device.connectGatt(context, false, mBleGattCallback, BluetoothDevice.TRANSPORT_LE, BluetoothDevice.PHY_LE_2M_MASK)
         } else {
@@ -147,6 +148,7 @@ class BleCore private constructor(private val context: Context) {
      * @param operateName 操作名， 决定通过那种方式开启通知
      */
     fun notifyEnable(characteristic: BluetoothGattCharacteristic, descriptorUuid: UUID, operateName: String) {
+        //设置特性通知，这一点很重要
         if (mGatt?.setCharacteristicNotification(characteristic,true) == false) return
         //描述
         val descriptor = characteristic.getDescriptor(descriptorUuid)
@@ -210,13 +212,21 @@ class BleCore private constructor(private val context: Context) {
         }
 
         /**
-         * 读取特性回调
+         * 读取特性回调 Android 13及以上使用
          */
         override fun onCharacteristicRead(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, value: ByteArray, status: Int) {
             if (status != BluetoothGatt.GATT_SUCCESS) return
-            deviceInfo("读取特性值：${BleUtils.bytesToHex(value, true)}")
+            deviceInfo("读取特性值(Android 13及以上)：${BleUtils.bytesToHex(value, true)}")
         }
 
+        /**
+         * 读取特性回调 Android 12及以下使用
+         */
+        @Deprecated("Deprecated in Java")
+        override fun onCharacteristicRead(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, status: Int) {
+            if (status != BluetoothGatt.GATT_SUCCESS) return
+            deviceInfo("读取特性值(Android 12及以下)：${BleUtils.bytesToHex(characteristic.value, true)}")
+        }
 
         /**
          * 写入特性回调
@@ -243,17 +253,30 @@ class BleCore private constructor(private val context: Context) {
             }
         }
 
+        /**
+         * 读取描述符回调 Android 13及以上使用
+         */
         override fun onDescriptorRead(gatt: BluetoothGatt, descriptor: BluetoothGattDescriptor, status: Int, value: ByteArray) {
             if (status != BluetoothGatt.GATT_SUCCESS) return
             mIsEnabled = !value.contentEquals(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE)
-            deviceInfo("读取描述符成功：${BleUtils.bytesToHex(value, true)}")
+            deviceInfo("读取描述符成功(Android 13及以上使用)：${BleUtils.bytesToHex(value, true)}")
+        }
+
+        /**
+         * 读取描述符回调 Android 12及以上下使用
+         */
+        @Deprecated("Deprecated in Java")
+        override fun onDescriptorRead(gatt: BluetoothGatt, descriptor: BluetoothGattDescriptor, status: Int) {
+            if (status != BluetoothGatt.GATT_SUCCESS) return
+            mIsEnabled = !descriptor.value.contentEquals(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE)
+            deviceInfo("读取描述符成功(Android 12及以下使用)：${BleUtils.bytesToHex(descriptor.value, true)}")
         }
 
         /**
          * 收到数据回调 Android 13及以上使用
          */
         override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, value: ByteArray) {
-            deviceInfo("收到特性值：${BleUtils.getShortUUID(characteristic.uuid)}：${BleUtils.bytesToHex(value, true)}")
+            deviceInfo("收到特性值(Android 13及以上)：${BleUtils.getShortUUID(characteristic.uuid)}：${BleUtils.bytesToHex(value, true)}")
         }
 
         /**
@@ -262,7 +285,7 @@ class BleCore private constructor(private val context: Context) {
 
         @Deprecated("Deprecated in Java")
         override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
-            deviceInfo("收到特性值：${BleUtils.getShortUUID(characteristic.uuid)}：${BleUtils.bytesToHex(characteristic.value, true)}")
+            deviceInfo("收到特性值(Android 12及以下)：${BleUtils.getShortUUID(characteristic.uuid)}：${BleUtils.bytesToHex(characteristic.value, true)}")
         }
 
     }
