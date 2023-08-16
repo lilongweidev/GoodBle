@@ -4,12 +4,13 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattService
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -34,6 +35,7 @@ import com.llw.goodble.ble.BleConstant.WRITE_NO_RESPONSE
 import com.llw.goodble.ble.BleCore
 import com.llw.goodble.ble.BleUtils
 import com.llw.goodble.databinding.ActivityMainBinding
+import com.llw.goodble.databinding.DialogRequestMtuBinding
 import com.llw.goodble.databinding.DialogWriteDataBinding
 import java.util.*
 
@@ -70,7 +72,7 @@ class MainActivity : BaseActivity(), BleCallback, OperateCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
+        setSupportActionBar(binding.toolbar)
         bleCore = (application as BleApp).getBleCore()
         bleCore.setBleCallback(this@MainActivity)
         //进入扫描页面
@@ -86,7 +88,30 @@ class MainActivity : BaseActivity(), BleCallback, OperateCallback {
         binding.tvDisconnect.setOnClickListener {
             bleCore.disconnect()
         }
+        //设备信息
+        binding.tvDeviceInfo.setOnClickListener {  }
     }
+
+    /**
+     * 创建选项菜单
+     */
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (!bleCore.isConnected()) {
+            showMsg("设备已断开连接")
+            return false
+        }
+        when(item.itemId) {
+            R.id.item_request_mtu -> showRequestMtuDialog()
+        }
+        return true
+    }
+
+
 
     override fun deviceInfo(info: String) {
         runOnUiThread {
@@ -175,4 +200,32 @@ class MainActivity : BaseActivity(), BleCallback, OperateCallback {
         dialog.setContentView(writeDataBinding.root)
         dialog.show()
     }
+
+    /**
+     * 显示请求Mtu弹窗
+     */
+    private fun showRequestMtuDialog() {
+        val dialog = BottomSheetDialog(this, R.style.BottomSheetDialogStyle)
+        val mtuBinding = DialogRequestMtuBinding.inflate(layoutInflater)
+        mtuBinding.btnPositive.setOnClickListener {
+            val inputData = mtuBinding.etData.text.toString()
+            if (inputData.isEmpty()) {
+                mtuBinding.dataLayout.error = "请输入MTU"
+                return@setOnClickListener
+            }
+            val mtu = inputData.toInt()
+            if (mtu !in 23..517) {
+                mtuBinding.dataLayout.error = "请输入23 ~ 517之间的数字"
+                return@setOnClickListener
+            }
+            bleCore.requestMtu(mtu)
+            dialog.dismiss()
+        }
+        mtuBinding.btnNegative.setOnClickListener {
+            dialog.dismiss()
+        }
+        dialog.setContentView(mtuBinding.root)
+        dialog.show()
+    }
+
 }

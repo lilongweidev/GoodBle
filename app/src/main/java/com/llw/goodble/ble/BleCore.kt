@@ -167,6 +167,14 @@ class BleCore private constructor(private val context: Context) {
         deviceInfo((if (executionResult == true)  "执行启用动作成功" else "执行启用动作失败") + "，value: ${BleUtils.bytesToHex(value, true)}" )
     }
 
+    /**
+     * 请求Mtu
+     */
+    fun requestMtu(mtu: Int) {
+        deviceInfo("请求Mtu：$mtu")
+        mGatt?.requestMtu(mtu)
+    }
+
     private fun isAndroid13() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
 
     /**
@@ -209,6 +217,14 @@ class BleCore private constructor(private val context: Context) {
                 deviceInfo("发现了 ${gatt.services.size} 个服务")
                 gatt.services?.let { mBleCallback?.onServicesDiscovered(it) }
             }
+        }
+
+        /**
+         * 请求Mtu回调
+         */
+        override fun onMtuChanged(gatt: BluetoothGatt, mtu: Int, status: Int) {
+            if (status != BluetoothGatt.GATT_SUCCESS) return
+            deviceInfo("Mtu更改为：$mtu")
         }
 
         /**
