@@ -1,29 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
     android:layout_width="match_parent"
+    android:background="@color/gray_white"
     android:layout_height="wrap_content"
-    android:background="@color/white">
+    android:orientation="vertical">
 
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        android:background="@color/white"
         app:navigationIcon="@drawable/ic_close_24"
-        app:titleCentered="true"
-        app:title="设备操作信息" />
+        app:title="设备操作信息"
+        app:titleCentered="true" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_device_info"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
+        android:layout_marginTop="2dp" />
 
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>

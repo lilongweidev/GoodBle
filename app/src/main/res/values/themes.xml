@@ -13,6 +13,7 @@
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
         <item name="android:windowBackground">@color/gray_white</item>
+        <!-- 自定义菜单栏按钮颜色 -->
         <item name="android:actionOverflowButtonStyle">@style/MyOverflowButtonStyle</item>
     </style>
 

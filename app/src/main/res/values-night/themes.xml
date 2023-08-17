@@ -13,6 +13,8 @@
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
         <item name="android:windowBackground">@color/gray_white</item>
+        <!-- 自定义菜单栏按钮颜色 -->
+        <item name="android:actionOverflowButtonStyle">@style/MyOverflowButtonStyle</item>
     </style>
 
     <style name="BottomSheetDialogStyle" parent="Theme.Design.BottomSheetDialog">
@@ -22,5 +24,9 @@
         <item name="android:background">@android:color/transparent</item>
         <item name="android:backgroundDimEnabled">true</item>
         <item name="android:colorBackground">@android:color/transparent</item>
+    </style>
+
+    <style name="MyOverflowButtonStyle" parent="Widget.AppCompat.ActionButton.Overflow">
+        <item name="android:tint">@color/white</item>
     </style>
 </resources>

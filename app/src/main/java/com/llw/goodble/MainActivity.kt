@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.SimpleItemAnimator
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.llw.goodble.adapter.InfoAdapter
 import com.llw.goodble.adapter.OperateCallback
 import com.llw.goodble.adapter.ServiceAdapter
 import com.llw.goodble.base.BaseActivity
@@ -35,6 +36,7 @@ import com.llw.goodble.ble.BleConstant.WRITE_NO_RESPONSE
 import com.llw.goodble.ble.BleCore
 import com.llw.goodble.ble.BleUtils
 import com.llw.goodble.databinding.ActivityMainBinding
+import com.llw.goodble.databinding.DialogDeviceInfoBinding
 import com.llw.goodble.databinding.DialogRequestMtuBinding
 import com.llw.goodble.databinding.DialogWriteDataBinding
 import java.util.*
@@ -52,6 +54,10 @@ class MainActivity : BaseActivity(), BleCallback, OperateCallback {
     private var mServiceAdapter: ServiceAdapter? = null
 
     private val mServiceList: MutableList<BluetoothGattService> = mutableListOf()
+
+    private val mInfoList: MutableList<String> = mutableListOf()
+
+    private lateinit var mMenu: Menu
 
     @SuppressLint("MissingPermission")
     private val scanIntent =
@@ -72,24 +78,16 @@ class MainActivity : BaseActivity(), BleCallback, OperateCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        //设置支持ActionBar
         setSupportActionBar(binding.toolbar)
         bleCore = (application as BleApp).getBleCore()
         bleCore.setBleCallback(this@MainActivity)
         //进入扫描页面
         binding.toolbar.setNavigationOnClickListener {
-            scanIntent.launch(
-                Intent(
-                    this,
-                    ScanActivity::class.java
-                )
-            )
-        }
-        //断开连接
-        binding.tvDisconnect.setOnClickListener {
-            bleCore.disconnect()
+            scanIntent.launch(Intent(this, ScanActivity::class.java))
         }
         //设备信息
-        binding.tvDeviceInfo.setOnClickListener {  }
+        binding.tvDeviceInfo.setOnClickListener { if (mInfoList.size > 0) showDeviceInfoDialog(mInfoList) }
     }
 
     /**
@@ -97,15 +95,20 @@ class MainActivity : BaseActivity(), BleCallback, OperateCallback {
      */
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
+        mMenu = menu
         return true
     }
 
+    /**
+     * 选项菜单Item选中
+     */
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (!bleCore.isConnected()) {
             showMsg("设备已断开连接")
             return false
         }
         when(item.itemId) {
+            R.id.item_disconnect -> bleCore.disconnect()
             R.id.item_request_mtu -> showRequestMtuDialog()
         }
         return true
@@ -116,6 +119,7 @@ class MainActivity : BaseActivity(), BleCallback, OperateCallback {
     override fun deviceInfo(info: String) {
         runOnUiThread {
             binding.tvDeviceInfo.text = info
+            mInfoList.add(info)
         }
     }
 
@@ -123,18 +127,19 @@ class MainActivity : BaseActivity(), BleCallback, OperateCallback {
     override fun onConnectionStateChange(state: Boolean) {
         runOnUiThread {
             if (state) {
-                binding.tvDisconnect.visibility = View.VISIBLE
+                mMenu.findItem(R.id.item_disconnect).isVisible = true
                 bleCore.getDevice()?.apply {
                     binding.toolbar.title = name ?: UNKNOWN_DEVICE
                     binding.toolbar.subtitle = address
                 }
             } else {
-                binding.tvDisconnect.visibility = View.GONE
+                mMenu.findItem(R.id.item_disconnect).isVisible = false
                 binding.toolbar.title = APP_NAME
                 binding.toolbar.subtitle = ""
                 binding.tvDeviceInfo.text = ""
                 binding.emptyBleLay.root.visibility = View.VISIBLE
                 mServiceList.clear()
+                mInfoList.clear()   //清除Info列表
                 mServiceAdapter?.notifyDataSetChanged()
             }
         }
@@ -225,6 +230,21 @@ class MainActivity : BaseActivity(), BleCallback, OperateCallback {
             dialog.dismiss()
         }
         dialog.setContentView(mtuBinding.root)
+        dialog.show()
+    }
+
+    /**
+     * 显示设备信息弹窗
+     */
+    private fun showDeviceInfoDialog(mInfoList: MutableList<String>) {
+        val dialog = BottomSheetDialog(this, R.style.BottomSheetDialogStyle)
+        val infoBinding = DialogDeviceInfoBinding.inflate(layoutInflater)
+        infoBinding.toolbar.setNavigationOnClickListener { dialog.dismiss() }
+        infoBinding.rvDeviceInfo.apply {
+            layoutManager = LinearLayoutManager(this@MainActivity)
+            adapter = InfoAdapter(mInfoList)
+        }
+        dialog.setContentView(infoBinding.root)
         dialog.show()
     }
 

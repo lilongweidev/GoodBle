@@ -169,6 +169,7 @@ class BleCore private constructor(private val context: Context) {
 
     /**
      * 请求Mtu
+     * @param mtu 23 ~ 517
      */
     fun requestMtu(mtu: Int) {
         deviceInfo("请求Mtu：$mtu")

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tv_device_info"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/white"
+    android:ellipsize="end"
+    android:padding="16dp"
+    android:singleLine="true"
+    android:text="设备操作信息"
+    android:layout_marginBottom="1dp"
+    android:textColor="@color/black" />
