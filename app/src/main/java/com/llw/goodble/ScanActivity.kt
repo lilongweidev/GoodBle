@@ -11,20 +11,35 @@ import android.location.LocationManager
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
+import android.widget.SeekBar
+import android.widget.SeekBar.OnSeekBarChangeListener
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.SimpleItemAnimator
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.llw.goodble.adapter.BleDeviceAdapter
 import com.llw.goodble.adapter.OnItemClickListener
 import com.llw.goodble.base.BaseActivity
 import com.llw.goodble.base.viewBinding
+import com.llw.goodble.ble.BleConstant
+import com.llw.goodble.ble.BleConstant.FILTER_MAC_FLAG
+import com.llw.goodble.ble.BleConstant.FILTER_MAC_VALUE
+import com.llw.goodble.ble.BleConstant.FILTER_NULL_FLAG
+import com.llw.goodble.ble.BleConstant.FILTER_RSSI_FLAG
+import com.llw.goodble.ble.BleConstant.FILTER_RSSI_VALUE
 import com.llw.goodble.ble.BleCore
 import com.llw.goodble.ble.BleDevice
+import com.llw.goodble.ble.BleUtils
 import com.llw.goodble.ble.scan.BleScanCallback
 import com.llw.goodble.ble.scan.ReceiverCallback
 import com.llw.goodble.ble.scan.ScanReceiver
 import com.llw.goodble.databinding.ActivityScanBinding
+import com.llw.goodble.databinding.DialogSettingMacBinding
+import com.llw.goodble.databinding.DialogSettingRssiBinding
+import com.llw.goodble.utils.MVUtils
 import java.util.*
 
 /**
@@ -44,6 +59,8 @@ class ScanActivity : BaseActivity(), View.OnClickListener, BleScanCallback, Rece
 
     //设备列表
     private val mList: MutableList<BleDevice> = mutableListOf()
+
+    private lateinit var mMenu: Menu
 
     //蓝牙连接权限
     private val requestConnect =
@@ -92,7 +109,7 @@ class ScanActivity : BaseActivity(), View.OnClickListener, BleScanCallback, Rece
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_scan)
-
+        setSupportActionBar(binding.toolbar)
         bleCore = (application as BleApp).getBleCore()
 
         initView()
@@ -161,6 +178,127 @@ class ScanActivity : BaseActivity(), View.OnClickListener, BleScanCallback, Rece
         if (!bleCore.isScanning()) startScan()
     }
 
+    /**
+     * 创建选项菜单
+     */
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_scan, menu)
+        mMenu = menu
+        mMenu.findItem(R.id.item_filter_null).isChecked = MVUtils.getBoolean(FILTER_NULL_FLAG)
+        mMenu.findItem(R.id.item_filter_mac).isChecked = MVUtils.getBoolean(FILTER_MAC_FLAG)
+        mMenu.findItem(R.id.item_filter_rssi).isChecked = MVUtils.getBoolean(FILTER_RSSI_FLAG)
+        if (MVUtils.getBoolean(FILTER_RSSI_FLAG)) {
+            mMenu.findItem(R.id.item_filter_rssi).title =
+                "过滤RSSI：-" + MVUtils.getInt(FILTER_RSSI_VALUE, 100)
+        }
+        return true
+    }
+
+    /**
+     * 选项菜单Item选中
+     */
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when(item.itemId) {
+            R.id.item_filter_null -> { // 过滤空设备名称
+                if (bleCore.isScanning()) stopScan()
+                val filterNull = MVUtils.getBoolean(FILTER_NULL_FLAG)
+                MVUtils.put(FILTER_NULL_FLAG, !filterNull)
+                mMenu.findItem(R.id.item_filter_null).isChecked = MVUtils.getBoolean(FILTER_NULL_FLAG)
+                showMsg(if (MVUtils.getBoolean(FILTER_NULL_FLAG)) "过滤空设备名称的设备" else "保留空设备名称的设备")
+                if (!bleCore.isScanning()) startScan()
+            }
+            R.id.item_filter_mac -> { // 过滤Mac地址
+                if (MVUtils.getBoolean(FILTER_MAC_FLAG)) {
+                    mMenu.findItem(R.id.item_filter_mac).isChecked = false
+                    MVUtils.put(FILTER_MAC_FLAG, false)
+                    MVUtils.put(FILTER_MAC_VALUE, "")
+                    showMsg("不过滤设备地址")
+                } else {
+                    showSettingMacDialog()
+                }
+            }
+            R.id.item_filter_rssi -> { // 过滤RSSI
+                if (MVUtils.getBoolean(FILTER_RSSI_FLAG)) {
+                    if (bleCore.isScanning()) stopScan()
+                    //关闭过滤RSSI
+                    MVUtils.put(FILTER_RSSI_FLAG, false)
+                    mMenu.findItem(R.id.item_filter_rssi).isChecked = false
+                    MVUtils.put(FILTER_RSSI_VALUE, 100)
+                    showMsg("取消过滤RSSI")
+                    if (!bleCore.isScanning()) startScan()
+                } else {
+                    showSettingRssi()
+                }
+            }
+        }
+        return true
+    }
+
+    private fun showSettingRssi() {
+        val dialog = BottomSheetDialog(this, R.style.BottomSheetDialogStyle)
+        val rssiBinding = DialogSettingRssiBinding.inflate(layoutInflater)
+        var progress = 100
+        rssiBinding.sbRssi.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
+            @SuppressLint("SetTextI18n")
+            override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
+                rssiBinding.tvRssi.text = "-$progress dBm"
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar) {
+                progress = seekBar.progress
+            }
+        })
+        val rssi: Int = MVUtils.getInt(FILTER_RSSI_VALUE, 100)
+        rssiBinding.sbRssi.progress = rssi
+        rssiBinding.tvRssi.text = String.format("-%s dBm", rssi)
+        rssiBinding.btnPositive.setOnClickListener {
+            //保存
+            if (bleCore.isScanning()) stopScan()
+            MVUtils.put(FILTER_RSSI_FLAG, true)
+            //保存设置的RSSI值
+            MVUtils.put(FILTER_RSSI_VALUE, progress)
+            mMenu.findItem(R.id.item_filter_rssi).isChecked = true
+            mMenu.findItem(R.id.item_filter_rssi).title = "过滤RSSI：-$progress"
+            showMsg("过滤RSSI：-" + progress + "dBm")
+            if (!bleCore.isScanning()) startScan()
+            dialog.dismiss()
+        }
+        rssiBinding.btnNegative.setOnClickListener { dialog.dismiss() }
+        dialog.setContentView(rssiBinding.root)
+        dialog.show()
+    }
+
+    private fun showSettingMacDialog() {
+        val dialog = BottomSheetDialog(this, R.style.BottomSheetDialogStyle)
+        val macBinding = DialogSettingMacBinding.inflate(layoutInflater)
+        macBinding.btnPositive.setOnClickListener {
+            val inputData = macBinding.etData.text.toString()
+            if (inputData.isEmpty()) {
+                macBinding.dataLayout.error = "请输入Mac地址"
+                return@setOnClickListener
+            }
+            if (macBinding.cbFormatCheck.isChecked) {
+                if (!BleUtils.isValidMac(inputData)) {
+                    macBinding.dataLayout.error = "请输入正确的Mac地址"
+                    return@setOnClickListener
+                }
+            }
+            if (bleCore.isScanning()) stopScan()
+            MVUtils.put(FILTER_MAC_VALUE, inputData)
+            MVUtils.put(FILTER_MAC_FLAG, true)
+            mMenu.findItem(R.id.item_filter_mac).isChecked = true
+            showMsg("过滤Mac地址")
+            if (!bleCore.isScanning()) startScan()
+            dialog.dismiss()
+        }
+        macBinding.btnNegative.setOnClickListener {
+            dialog.dismiss()
+        }
+        dialog.setContentView(macBinding.root)
+        dialog.show()
+    }
+
+
     override fun onClick(v: View) {
         when (v.id) {
             //请求蓝牙连接权限
@@ -203,15 +341,32 @@ class ScanActivity : BaseActivity(), View.OnClickListener, BleScanCallback, Rece
      * 扫描回调
      */
     override fun onScanResult(result: ScanResult) {
-        if (result.scanRecord!!.deviceName == null) return
-        if (result.scanRecord!!.deviceName!!.isEmpty()) return
-        val bleDevice = BleDevice(
-            result.scanRecord!!.deviceName,
-            result.device.address,
-            result.rssi,
-            result.device
-        )
-        Log.d(TAG, "onScanResult: ${bleDevice.macAddress}")
+        //过滤空设备名
+        if (MVUtils.getBoolean(FILTER_NULL_FLAG)) {
+            if (result.scanRecord!!.deviceName == null) {
+                return
+            }
+            if (result.scanRecord!!.deviceName!!.isEmpty()) {
+                return
+            }
+        }
+        //过滤Mac地址
+        if (MVUtils.getBoolean(FILTER_MAC_FLAG)) {
+            val filterMac: String? = MVUtils.getString(FILTER_MAC_VALUE, "")
+            if (filterMac!!.isNotEmpty()) {
+                if (!result.device.address.contains(filterMac)) return
+            }
+        }
+        //过滤RSSI
+        if (MVUtils.getBoolean(FILTER_RSSI_FLAG)) {
+            val rssi: Int = -MVUtils.getInt(FILTER_RSSI_VALUE, 100)
+            if (result.rssi < rssi) {
+                return
+            }
+        }
+        //设备名称
+        val realName = result.scanRecord?.deviceName?.let { it.ifEmpty { BleConstant.UNKNOWN_DEVICE } } ?: BleConstant.UNKNOWN_DEVICE
+        val bleDevice = BleDevice(realName, result.device.address, result.rssi, result.device)
         if (mList.size == 0) {
             mList.add(bleDevice)
         } else {

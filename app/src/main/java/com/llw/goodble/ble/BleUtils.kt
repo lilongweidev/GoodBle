@@ -1,6 +1,7 @@
 package com.llw.goodble.ble
 
 import android.os.Build
+import android.util.Log
 import com.llw.goodble.ble.BleConstant.AUTHENTICATED_SIGNED_WRITES
 import com.llw.goodble.ble.BleConstant.BROADCAST
 import com.llw.goodble.ble.BleConstant.EXTENDED_PROPERTIES
@@ -634,6 +635,8 @@ object BleUtils {
      * 是否HEX格式数据
      */
     fun isHexFormat(str: String) = Regex("^([\\dA-Fa-f]{2})+$").matches(str)
+
+    fun isValidMac(macStr: String) = Regex("([A-Fa-f0-9]{2}[:]){5}[A-Fa-f0-9]{2}").matches(macStr)
 
     fun isAndroid13() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
 

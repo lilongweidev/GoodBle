@@ -31,4 +31,15 @@ object BleConstant {
 
     const val EXTENDED_PROPERTIES = "Extended Properties"
 
+    //过滤RSSI
+    const val FILTER_RSSI_FLAG = "filterRssiFlag"
+    //RSSI 值
+    const val FILTER_RSSI_VALUE = "filterRssiValue"
+    //过滤空设备名
+    const val FILTER_NULL_FLAG = "filterNullFlag"
+    //是否过滤Mac地址
+    const val FILTER_MAC_FLAG = "filterMacFlag"
+    //需要过滤的Mac地址
+    const val FILTER_MAC_VALUE = "filterMacValue"
+
 }

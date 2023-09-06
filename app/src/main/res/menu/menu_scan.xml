@@ -1,0 +1,16 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/item_filter_null"
+        android:checkable="true"
+        android:title="过滤空设备名" />
+    <item
+        android:id="@+id/item_filter_mac"
+        android:checkable="true"
+        android:title="过滤Mac地址" />
+    <item
+        android:id="@+id/item_filter_rssi"
+        android:checkable="true"
+        android:title="过滤RSSI" />
+
+</menu>
